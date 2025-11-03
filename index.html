@@ -1,175 +1,444 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Listado de Productores</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Listado de Productores de Café — Completo (rápido + tarjetas)</title>
+<style>
+:root {
+  --color-principal: #860062;
+  --color-texto: white;
+}
 
-  <style>
-    body {
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      margin: 20px;
-      background-color: #fafafa;
-    }
+body {
+  font-family: 'Century Gothic', sans-serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 0;
+  color: black; /* texto por defecto negro */
+}
 
-    h1 {
-      font-family: "Century Gothic", sans-serif;
-      background-color: #860062;
-      color: #fff;
-      font-weight: bold;
-      padding: 12px 16px;
-      border-radius: 6px;
-    }
+/* INDICADOR DE CARGA */
+#loadingOverlay {
+  display: none;
+  position: fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: rgba(0,0,0,0.3);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#loadingOverlay span {
+  background: white;
+  color: var(--color-principal);
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 1.2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
 
-    .filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 15px 0;
-    }
-    .filters label {
-      font-weight: 600;
-      margin-right: 5px;
-    }
-    .filters input {
-      padding: 6px 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      min-width: 180px;
-    }
+/* HEADER */
+header {
+  background-color: var(--color-principal);
+  color: var(--color-texto);
+  text-align: center;
+  padding: 1rem;
+  font-weight: bold;
+  font-size: 1.4rem;
+  border-bottom: 3px solid rgba(0,0,0,0.1);
+}
 
-    .cards-container {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
+/* FILTROS */
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  padding: 1rem;
+  justify-content: center;
+}
+.filtro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  background: white;
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  flex: 1 1 280px;
+  max-width: 400px;
+}
+.filtro label {
+  font-weight: bold;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+.filtro input {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.9rem;
+  width: 100%;
+  max-width: 180px;
+  box-sizing: border-box;
+}
 
-    .card {
-      background-color: #fff;
-      border-radius: 10px;
-      padding: 15px 20px;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+/* TABLA DE ESCRITORIO */
+#tabla table {
+  width: 95%;
+  max-width: 1200px;
+  margin: 1rem auto;
+  border-collapse: collapse;
+}
+#tabla table th, #tabla table td {
+  border: 1px solid #ccc;
+  padding: 0.5rem 0.8rem;
+  text-align: left;
+  font-size: 0.95rem;
+}
+#tabla table th {
+  background-color: var(--color-principal);
+  color: var(--color-texto);
+  font-weight: bold;
+}
 
-    .card strong {
-      color: #860062;
-      font-family: "Century Gothic", sans-serif;
-    }
+/* TARJETAS MÓVIL */
+.tarjeta {
+  display: none;
+  background-color: white;
+  color: black;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  padding: 0.6rem 1rem;
+  width: 95%;
+  max-width: 600px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  box-sizing: border-box;
+  margin: 0.5rem auto;
+  contain: content; /* aisla el layout para scroll más fluido */
+}
+.fila {
+  display: flex;
+  justify-content: flex-start;
+  gap: 0.2rem;
+  margin: 0.8rem 0;
+  line-height: 1.4;
+}
+.fila .titulo {
+  font-weight: bold;
+  color: var(--color-principal);
+}
+.fila .titulo::after {
+  content: ":";
+  margin-right: 0;
+}
+.fila .valor { margin: 0; }
 
-    @media(min-width: 768px) {
-      .cards-container {
-        flex-direction: row;
-        flex-wrap: wrap;
-      }
-      .card {
-        flex: 1 1 calc(50% - 15px);
-      }
-    }
-    @media(min-width: 1200px) {
-      .card {
-        flex: 1 1 calc(33% - 15px);
-      }
-    }
-  </style>
+/* BOTÓN FLOTANTE */
+#toggleHojaHeader {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: white;
+  color: var(--color-principal);
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  border: 1px solid var(--color-principal);
+  border-radius: 10px;
+  padding: 0.6rem 1rem;
+  z-index: 10000;
+  transition: 0.2s;
+}
+#toggleHojaHeader:hover { background-color: var(--color-principal); color: white; }
+#toggleHojaHeader:active { transform: scale(0.97); }
+
+/* MEDIA QUERY MÓVIL */
+@media(max-width: 768px){
+  .filtros { flex-direction: column; align-items: stretch; padding: 0.8rem; }
+  .filtro { flex: 1 1 100%; max-width: 100%; }
+  .filtro input { max-width: 100%; }
+  #toggleHojaHeader { bottom: 15px; right: 15px; padding: 0.5rem 0.8rem; }
+  #tabla table { display: none; }
+  .tarjeta { display: block; }
+}
+</style>
 </head>
 <body>
-  <h1>Listado de Productores</h1>
 
-  <div class="filters">
-    <div>
-      <label for="filterNombre">Nombre:</label>
-      <input id="filterNombre" type="text" placeholder="Buscar por nombre...">
-    </div>
-    <div>
-      <label for="filterVendor">Vendor:</label>
-      <input id="filterVendor" type="text" placeholder="Buscar por vendor...">
-    </div>
-    <div>
-      <label for="filterAcopio">Acopio:</label>
-      <input id="filterAcopio" type="text" placeholder="Buscar por acopio...">
-    </div>
-    <div>
-      <label for="filterAgencia">Agencia:</label>
-      <input id="filterAgencia" type="text" placeholder="Buscar por agencia...">
-    </div>
-  </div>
+<div id="loadingOverlay"><span>Cargando...</span></div>
+<header id="titulo">Listado de Productores de Café</header>
+<div class="filtros" id="filtrosContainer"></div>
+<div id="tabla"></div>
+<button id="toggleHojaHeader"><span id="flecha">➡️</span> Ver lista Tolling</button>
 
-  <div class="cards-container" id="cardsContainer"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+<script>
+// URLs
+const hoja1Url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRA_EuZwrpcm_SZXWp8WkuyHNs7gv_HpNsaPKOu2wRRNO7R4Qv6bzbT9FUpzWUS-DKayE3tRHnDwQ88/pub?output=csv';
+const hoja2Url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRA_EuZwrpcm_SZXWp8WkuyHNs7gv_HpNsaPKOu2wRRNO7R4Qv6bzbT9FUpzWUS-DKayE3tRHnDwQ88/pub?gid=1929408754&output=csv';
 
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+// Estado
+let usandoHoja2 = false;
+let data = [];
+let headers = [];
+let dataLower = [];
+const filtrosContainer = document.getElementById('filtrosContainer');
+const tablaDiv = document.getElementById('tabla');
+const toggleBtnHeader = document.getElementById('toggleHojaHeader');
+const headerTitulo = document.getElementById('titulo');
+const loadingOverlay = document.getElementById('loadingOverlay');
+let debounceTimeout;
 
-  <script>
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRA_EuZwrpcm_SZXWp8WkuyHNs7gv_HpNsaPKOu2wRRNO7R4Qv6bzbT9FUpzWUS-DKayE3tRHnDwQ88/pub?output=csv';
-    let allData = [];
+// Virtualización DOM
+const CHUNK = 200; // filas por bloque
+let lastIndexList = [];
 
-    Papa.parse(csvUrl, {
-      download: true,
-      header: true,
-      skipEmptyLines: true,
-      complete: function(results) {
-        if (!results.data || results.data.length === 0) {
-          alert('No se encontraron registros en el CSV.');
-          return;
-        }
-        allData = results.data;
-        renderCards(allData);
-        setupFilters();
-      },
-      error: function(err) {
-        console.error(err);
-        alert('Error al cargar datos del CSV.');
+function mostrarLoading(show){ loadingOverlay.style.display = show ? 'flex' : 'none'; }
+function setTheme(colorPrincipal, colorTexto){
+  document.documentElement.style.setProperty('--color-principal', colorPrincipal);
+  document.documentElement.style.setProperty('--color-texto', colorTexto);
+}
+
+// =====================
+//  CARGA PROGRESIVA CSV
+// =====================
+function cargarCSV(url, onDone){
+  mostrarLoading(true);
+  // Reiniciar estructuras visuales y de datos
+  data = []; dataLower = []; headers = []; lastIndexList = [];
+  filtrosContainer.innerHTML = ''; tablaDiv.innerHTML = '';
+
+  let rowsProcessed = 0;
+  let filtrosCreados = false;
+  const FIRST_RENDER_AT = 300; // primera pintura rápida
+  const BATCH_RENDER_EVERY = 300; // ir agregando por lotes
+
+  Papa.parse(url, {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    worker: true,          // evita bloquear la UI
+    fastMode: false,       // ❗ respeta comas entre comillas
+    delimiter: ",",
+    quoteChar: '"',
+    escapeChar: '\\',
+    step: function(results){
+      const rowObj = results.data;
+      if (!rowObj || Object.keys(rowObj).length === 0) return;
+
+      if (headers.length === 0) headers = Object.keys(rowObj);
+      const row = headers.map(h => rowObj[h] ?? '');
+      data.push(row);
+      dataLower.push(row.map(c => String(c).toLowerCase()));
+      rowsProcessed++;
+
+      if (!filtrosCreados && rowsProcessed >= Math.min(FIRST_RENDER_AT, 300)){
+        crearFiltros();
+        mostrarDatosPorIndice(data.map((_, i) => i));
+        filtrosCreados = true;
       }
-    });
-
-    function renderCards(data) {
-      const container = $('#cardsContainer');
-      container.empty();
-      data.forEach(row => {
-        const card = $(`
-          <div class="card">
-            <div><strong>Nombre:</strong> ${row.NOMBRE || ''}</div>
-            <div><strong>Vendor:</strong> ${row.VENDOR || ''}</div>
-            <div><strong>Acopio:</strong> ${row.ACOPIO || ''}</div>
-            <div><strong>Agencia:</strong> ${row.AGENCIA || ''}</div>
-            <div><strong>Sello SAP Principal:</strong> ${row['SELLO SAP PRINCIPAL'] || ''}</div>
-            <div><strong>Sello Secundario:</strong> ${row['SELLO SECUNDARIO'] || ''}</div>
-          </div>
-        `);
-        container.append(card);
-      });
+      if (filtrosCreados && rowsProcessed % BATCH_RENDER_EVERY === 0){
+        (window.requestIdleCallback || window.requestAnimationFrame)(actualizarRenderIncremental);
+      }
+    },
+    complete: function(){
+      if (!filtrosCreados){
+        crearFiltros();
+        mostrarDatosPorIndice(data.map((_, i) => i));
+      } else {
+        actualizarRenderIncremental();
+      }
+      mostrarLoading(false);
+      if (typeof onDone === 'function') onDone();
+    },
+    error: function(){
+      mostrarLoading(false);
+      if (typeof onDone === 'function') onDone();
+      alert('Error al cargar el CSV');
     }
+  });
+}
 
-    function setupFilters() {
-      const inputs = ['#filterNombre', '#filterVendor', '#filterAcopio', '#filterAgencia'];
-      let debounceTimer;
+function actualizarRenderIncremental(){
+  const inputs = Array.from(filtrosContainer.querySelectorAll('input'));
+  const hayTexto = inputs.some(i => i.value.trim() !== '');
+  if (hayTexto) filtrar(); else mostrarDatosPorIndice(data.map((_, i) => i));
+}
 
-      inputs.forEach(selector => {
-        $(selector).on('input', function() {
-          clearTimeout(debounceTimer);
-          debounceTimer = setTimeout(() => applyFilters(), 500); // 2 segundos de espera
-        });
-      });
+// =====================
+//  FILTROS (solo UI)
+// =====================
+function crearFiltros(){
+  filtrosContainer.innerHTML = '';
+  const normalizar = (s) => (s||'')
+    .toString()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // quita tildes
+    .toLowerCase()
+    .replace(/\s*\/\s*/g,' / ')
+    .replace(/\s+/g,' ')
+    .trim();
+
+  // Campos que NO deben aparecer como filtro (pero sí en la tabla)
+  const ocultarSet = new Set([
+    'acopio',
+    'agencia',
+    'origen / zona',
+    'produccion estimada ob',
+    'produccion estimada de ob'
+  ]);
+
+  headers.forEach((h,i)=>{
+    const hNorm = normalizar(h);
+    if (hNorm.includes('sello') || ocultarSet.has(hNorm)) return; // solo ocultar filtro
+
+    const cont = document.createElement('div');
+    cont.className='filtro';
+    cont.innerHTML=`<label>${h}</label><input type="text" data-col="${i}">`;
+    filtrosContainer.appendChild(cont);
+  });
+
+  filtrosContainer.querySelectorAll('input').forEach(input=>{
+    input.addEventListener('input', filtrarDebounce);
+  });
+}
+
+function filtrarDebounce(){
+  clearTimeout(debounceTimeout);
+  debounceTimeout = setTimeout(()=>{ requestAnimationFrame(filtrar); }, 300);
+}
+
+function filtrar(){
+  const filtrosActivos = Array.from(filtrosContainer.querySelectorAll('input'))
+    .map(i => ({ col: +i.dataset.col, tokens: i.value.trim().toLowerCase().split(/\s+/).filter(Boolean) }))
+    .filter(f => f.tokens.length);
+
+  if (filtrosActivos.length === 0){ mostrarDatosPorIndice(data.map((_, i) => i)); return; }
+
+  const filtradoIdx = [];
+  for (let r = 0; r < dataLower.length; r++){
+    const fila = dataLower[r];
+    let ok = true;
+    for (let k = 0; k < filtrosActivos.length && ok; k++){
+      const { col, tokens } = filtrosActivos[k];
+      const celda = fila[col] || '';
+      for (let t = 0; t < tokens.length; t++) if (!celda.includes(tokens[t])) { ok = false; break; }
     }
+    if (ok) filtradoIdx.push(r);
+  }
+  mostrarDatosPorIndice(filtradoIdx);
+}
 
-    function applyFilters() {
-      const nombreVal = $('#filterNombre').val().toLowerCase();
-      const vendorVal = $('#filterVendor').val().toLowerCase();
-      const acopioVal = $('#filterAcopio').val().toLowerCase();
-      const agenciaVal = $('#filterAgencia').val().toLowerCase();
+// =====================
+//  RENDER: tabla + tarjetas
+// =====================
+function mostrarDatosPorIndice(indices){
+  lastIndexList = indices;
+  renderChunk(0);
+}
 
-      const filtered = allData.filter(r => 
-        (r.NOMBRE || '').toLowerCase().includes(nombreVal) &&
-        (r.VENDOR || '').toLowerCase().includes(vendorVal) &&
-        (r.ACOPIO || '').toLowerCase().includes(acopioVal) &&
-        (r.AGENCIA || '').toLowerCase().includes(agenciaVal)
-      );
+function renderChunk(start){
+  tablaDiv.innerHTML = '';
+  const end = Math.min(start + CHUNK, lastIndexList.length);
+  const frag = document.createDocumentFragment();
 
-      renderCards(filtered);
-    }
-  </script>
+  // TABLA
+  const table=document.createElement('table');
+  const thead=document.createElement('thead');
+  thead.innerHTML='<tr>'+headers.map(h=>`<th>${h}</th>`).join('')+'</tr>';
+  table.appendChild(thead);
+  const tbody=document.createElement('tbody');
+
+  for (let i = start; i < end; i++){
+    const row = data[lastIndexList[i]];
+    const tr=document.createElement('tr');
+    tr.innerHTML=row.map(c=>`<td>${c}</td>`).join('');
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  frag.appendChild(table);
+
+  // TARJETAS (móvil)
+  for (let i = start; i < end; i++){
+    const row = data[lastIndexList[i]];
+    const card=document.createElement('div');
+    card.className='tarjeta';
+    card.innerHTML=row.map((c,j)=>`<div class="fila"><div class="titulo">${headers[j]}</div><div class="valor">${c}</div></div>`).join('');
+    frag.appendChild(card);
+  }
+
+  // Botón "Cargar más"
+  if (end < lastIndexList.length){
+    const btn = document.createElement('button');
+    btn.textContent = `Cargar más (${lastIndexList.length - end} restantes)`;
+    btn.style.margin = '1rem';
+    btn.onclick = () => { appendChunk(end); btn.remove(); };
+    frag.appendChild(btn);
+  }
+
+  tablaDiv.appendChild(frag);
+}
+
+function appendChunk(start){
+  const end = Math.min(start + CHUNK, lastIndexList.length);
+
+  // Añadir filas a la tabla existente
+  const table = tablaDiv.querySelector('table');
+  const tbody = table.querySelector('tbody');
+  const fragRows = document.createDocumentFragment();
+  for (let i = start; i < end; i++){
+    const tr = document.createElement('tr');
+    tr.innerHTML = data[lastIndexList[i]].map(c => `<td>${c}</td>`).join('');
+    fragRows.appendChild(tr);
+  }
+  tbody.appendChild(fragRows);
+
+  // Añadir tarjetas
+  const fragCards = document.createDocumentFragment();
+  for (let i = start; i < end; i++){
+    const card = document.createElement('div');
+    card.className = 'tarjeta';
+    card.innerHTML = data[lastIndexList[i]].map((c, j) =>
+      `<div class="fila"><div class="titulo">${headers[j]}</div><div class="valor">${c}</div></div>`
+    ).join('');
+    fragCards.appendChild(card);
+  }
+  tablaDiv.appendChild(fragCards);
+
+  if (end < lastIndexList.length){
+    const btn = document.createElement('button');
+    btn.textContent = `Cargar más (${lastIndexList.length - end} restantes)`;
+    btn.style.margin = '1rem';
+    btn.onclick = () => { appendChunk(end); btn.remove(); };
+    tablaDiv.appendChild(btn);
+  }
+}
+
+// Toggle tema + carga con auto-espera (sin bloqueos artificiales)
+toggleBtnHeader.addEventListener('click',()=>{
+  toggleBtnHeader.disabled = true;
+  mostrarLoading(true);
+  usandoHoja2 = !usandoHoja2;
+  if(usandoHoja2){
+    headerTitulo.textContent='Lista de clientes Tolling';
+    toggleBtnHeader.innerHTML='<span id="flecha">⬅️</span> Volver a productores';
+    setTheme('#f78c2a','black'); // naranja + todas las letras negras
+    cargarCSV(hoja2Url, () => { toggleBtnHeader.disabled = false; });
+  } else {
+    headerTitulo.textContent='Listado de Productores de Café';
+    toggleBtnHeader.innerHTML='<span id="flecha">➡️</span> Ver lista Tolling';
+    setTheme('#860062','white'); // morado + texto blanco en header
+    cargarCSV(hoja1Url, () => { toggleBtnHeader.disabled = false; });
+  }
+});
+
+// Carga inicial
+cargarCSV(hoja1Url);
+</script>
 </body>
 </html>
