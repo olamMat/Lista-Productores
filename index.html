@@ -1,444 +1,644 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Listado de Productores de Café — Completo (rápido + tarjetas)</title>
-<style>
-:root {
-  --color-principal: #860062;
-  --color-texto: white;
-}
-
-body {
-  font-family: 'Century Gothic', sans-serif;
-  background-color: #f9f9f9;
-  margin: 0;
-  padding: 0;
-  color: black; /* texto por defecto negro */
-}
-
-/* INDICADOR DE CARGA */
-#loadingOverlay {
-  display: none;
-  position: fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background: rgba(0,0,0,0.3);
-  z-index: 100000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-#loadingOverlay span {
-  background: white;
-  color: var(--color-principal);
-  padding: 1rem 2rem;
-  border-radius: 12px;
-  font-weight: bold;
-  font-size: 1.2rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-
-/* HEADER */
-header {
-  background-color: var(--color-principal);
-  color: var(--color-texto);
-  text-align: center;
-  padding: 1rem;
-  font-weight: bold;
-  font-size: 1.4rem;
-  border-bottom: 3px solid rgba(0,0,0,0.1);
-}
-
-/* FILTROS */
-.filtros {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.8rem;
-  padding: 1rem;
-  justify-content: center;
-}
-.filtro {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.4rem;
-  background: white;
-  border-radius: 8px;
-  padding: 0.5rem 0.8rem;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-  flex: 1 1 280px;
-  max-width: 400px;
-}
-.filtro label {
-  font-weight: bold;
-  font-size: 0.9rem;
-  white-space: nowrap;
-}
-.filtro input {
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 0.4rem 0.5rem;
-  font-size: 0.9rem;
-  width: 100%;
-  max-width: 180px;
-  box-sizing: border-box;
-}
-
-/* TABLA DE ESCRITORIO */
-#tabla table {
-  width: 95%;
-  max-width: 1200px;
-  margin: 1rem auto;
-  border-collapse: collapse;
-}
-#tabla table th, #tabla table td {
-  border: 1px solid #ccc;
-  padding: 0.5rem 0.8rem;
-  text-align: left;
-  font-size: 0.95rem;
-}
-#tabla table th {
-  background-color: var(--color-principal);
-  color: var(--color-texto);
-  font-weight: bold;
-}
-
-/* TARJETAS MÓVIL */
-.tarjeta {
-  display: none;
-  background-color: white;
-  color: black;
-  border-radius: 12px;
-  border: 1px solid transparent;
-  padding: 0.6rem 1rem;
-  width: 95%;
-  max-width: 600px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-  box-sizing: border-box;
-  margin: 0.5rem auto;
-  contain: content; /* aisla el layout para scroll más fluido */
-}
-.fila {
-  display: flex;
-  justify-content: flex-start;
-  gap: 0.2rem;
-  margin: 0.8rem 0;
-  line-height: 1.4;
-}
-.fila .titulo {
-  font-weight: bold;
-  color: var(--color-principal);
-}
-.fila .titulo::after {
-  content: ":";
-  margin-right: 0;
-}
-.fila .valor { margin: 0; }
-
-/* BOTÓN FLOTANTE */
-#toggleHojaHeader {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: white;
-  color: var(--color-principal);
-  font-weight: bold;
-  font-size: 1rem;
-  cursor: pointer;
-  border: 1px solid var(--color-principal);
-  border-radius: 10px;
-  padding: 0.6rem 1rem;
-  z-index: 10000;
-  transition: 0.2s;
-}
-#toggleHojaHeader:hover { background-color: var(--color-principal); color: white; }
-#toggleHojaHeader:active { transform: scale(0.97); }
-
-/* MEDIA QUERY MÓVIL */
-@media(max-width: 768px){
-  .filtros { flex-direction: column; align-items: stretch; padding: 0.8rem; }
-  .filtro { flex: 1 1 100%; max-width: 100%; }
-  .filtro input { max-width: 100%; }
-  #toggleHojaHeader { bottom: 15px; right: 15px; padding: 0.5rem 0.8rem; }
-  #tabla table { display: none; }
-  .tarjeta { display: block; }
-}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Listado de Productores de Café — Completo (rápido + tarjetas)</title>
+  <style>
+    :root {
+      --color-principal: #860062;
+      --color-texto: white;
+    }
+    body {
+      font-family: 'Century Gothic', sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+      color: black;
+    }
+    
+    /* INDICADOR DE CARGA */
+    #loadingOverlay {
+      display: none;
+      position: fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      background: rgba(0,0,0,0.3);
+      z-index: 100000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #loadingOverlay span {
+      background: white;
+      color: var(--color-principal);
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 1.2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    /* HEADER */
+    header {
+      background-color: var(--color-principal);
+      color: var(--color-texto);
+      text-align: center;
+      padding: 1rem;
+      font-weight: bold;
+      font-size: 1.4rem;
+      border-bottom: 3px solid rgba(0,0,0,0.1);
+    }
+    
+    /* FILTROS */
+    .filtros {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      padding: 1rem;
+      justify-content: center;
+    }
+    .filtro {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.4rem;
+      background: white;
+      border-radius: 8px;
+      padding: 0.5rem 0.8rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      flex: 1 1 280px;
+      max-width: 400px;
+    }
+    .filtro label {
+      font-weight: bold;
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+    .filtro input {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 0.4rem 0.5rem;
+      font-size: 0.9rem;
+      width: 100%;
+      max-width: 180px;
+      box-sizing: border-box;
+    }
+    
+    /* ESTILOS PARA COMPLIANT Y ATTRIBUTE UNKNOWN */
+    .status-compliant {
+      background-color: #28a745 !important;
+      color: white !important;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: bold;
+      font-size: 0.85rem;
+      border: none;
+      position: relative;
+      padding-left: 2.2rem;
+    }
+    
+    .status-compliant::before {
+      content: "";
+      position: absolute;
+      left: 0.6rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      background-color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .status-compliant::after {
+      content: "";
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 6px;
+      height: 8px;
+      background-color: #28a745;
+      clip-path: polygon(0% 50%, 100% 0%, 100% 100%);
+    }
+    
+    .status-unknown {
+      background-color: #dc3545 !important;
+      color: white !important;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: bold;
+      font-size: 0.85rem;
+      border: none;
+      position: relative;
+      padding-left: 2.2rem;
+    }
+    
+    .status-unknown::before {
+      content: "";
+      position: absolute;
+      left: 0.6rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      background-color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .status-unknown::after {
+      content: "×";
+      position: absolute;
+      left: 0.6rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #dc3545;
+      font-size: 10px;
+      font-weight: bold;
+      width: 12px;
+      height: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* TABLA DE ESCRITORIO */
+    #tabla table {
+      width: 95%;
+      max-width: 1200px;
+      margin: 1rem auto;
+      border-collapse: collapse;
+    }
+    #tabla table th, #tabla table td {
+      border: 1px solid #ccc;
+      padding: 0.5rem 0.8rem;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+    #tabla table th {
+      background-color: var(--color-principal);
+      color: var(--color-texto);
+      font-weight: bold;
+    }
+    
+    /* TARJETAS MÓVIL */
+    .tarjeta {
+      display: none;
+      background-color: white;
+      color: black;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      padding: 0.6rem 1rem;
+      width: 95%;
+      max-width: 600px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+      box-sizing: border-box;
+      margin: 0.5rem auto;
+      contain: content;
+    }
+    .fila {
+      display: flex;
+      justify-content: flex-start;
+      gap: 0.2rem;
+      margin: 0.8rem 0;
+      line-height: 1.4;
+    }
+    .fila .titulo {
+      font-weight: bold;
+      color: var(--color-principal);
+    }
+    .fila .titulo::after {
+      content: ":";
+      margin-right: 0;
+    }
+    .fila .valor {
+      margin: 0;
+    }
+    
+    /* BOTÓN FLOTANTE */
+    #toggleHojaHeader {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: white;
+      color: var(--color-principal);
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      border: 1px solid var(--color-principal);
+      border-radius: 10px;
+      padding: 0.6rem 1rem;
+      z-index: 10000;
+      transition: 0.2s;
+    }
+    #toggleHojaHeader:hover {
+      background-color: var(--color-principal);
+      color: white;
+    }
+    #toggleHojaHeader:active {
+      transform: scale(0.97);
+    }
+    
+    /* MEDIA QUERY MÓVIL */
+    @media(max-width: 768px){
+      .filtros {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.8rem;
+      }
+      .filtro {
+        flex: 1 1 100%;
+        max-width: 100%;
+      }
+      .filtro input {
+        max-width: 100%;
+      }
+      #toggleHojaHeader {
+        bottom: 15px;
+        right: 15px;
+        padding: 0.5rem 0.8rem;
+      }
+      #tabla table {
+        display: none;
+      }
+      .tarjeta {
+        display: block;
+      }
+    }
+  </style>
 </head>
 <body>
+  <div id="loadingOverlay"><span>Cargando...</span></div>
+  <header id="titulo">Listado de Productores de Café</header>
+  <div class="filtros" id="filtrosContainer"></div>
+  <div id="tabla"></div>
+  <button id="toggleHojaHeader"><span id="flecha">➡️</span> Ver lista Tolling</button>
 
-<div id="loadingOverlay"><span>Cargando...</span></div>
-<header id="titulo">Listado de Productores de Café</header>
-<div class="filtros" id="filtrosContainer"></div>
-<div id="tabla"></div>
-<button id="toggleHojaHeader"><span id="flecha">➡️</span> Ver lista Tolling</button>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script>
+    // URLs
+    const hoja1Url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRA_EuZwrpcm_SZXWp8WkuyHNs7gv_HpNsaPKOu2wRRNO7R4Qv6bzbT9FUpzWUS-DKayE3tRHnDwQ88/pub?output=csv';
+    const hoja2Url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRA_EuZwrpcm_SZXWp8WkuyHNs7gv_HpNsaPKOu2wRRNO7R4Qv6bzbT9FUpzWUS-DKayE3tRHnDwQ88/pub?gid=1929408754&output=csv';
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-<script>
-// URLs
-const hoja1Url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRA_EuZwrpcm_SZXWp8WkuyHNs7gv_HpNsaPKOu2wRRNO7R4Qv6bzbT9FUpzWUS-DKayE3tRHnDwQ88/pub?output=csv';
-const hoja2Url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRA_EuZwrpcm_SZXWp8WkuyHNs7gv_HpNsaPKOu2wRRNO7R4Qv6bzbT9FUpzWUS-DKayE3tRHnDwQ88/pub?gid=1929408754&output=csv';
+    // Estado
+    let usandoHoja2 = false;
+    let data = [];
+    let headers = [];
+    let dataLower = [];
+    const filtrosContainer = document.getElementById('filtrosContainer');
+    const tablaDiv = document.getElementById('tabla');
+    const toggleBtnHeader = document.getElementById('toggleHojaHeader');
+    const headerTitulo = document.getElementById('titulo');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    let debounceTimeout;
 
-// Estado
-let usandoHoja2 = false;
-let data = [];
-let headers = [];
-let dataLower = [];
-const filtrosContainer = document.getElementById('filtrosContainer');
-const tablaDiv = document.getElementById('tabla');
-const toggleBtnHeader = document.getElementById('toggleHojaHeader');
-const headerTitulo = document.getElementById('titulo');
-const loadingOverlay = document.getElementById('loadingOverlay');
-let debounceTimeout;
+    // Virtualización DOM
+    const CHUNK = 200;
+    let lastIndexList = [];
 
-// Virtualización DOM
-const CHUNK = 200; // filas por bloque
-let lastIndexList = [];
+    function mostrarLoading(show){
+      loadingOverlay.style.display = show ? 'flex' : 'none';
+    }
 
-function mostrarLoading(show){ loadingOverlay.style.display = show ? 'flex' : 'none'; }
-function setTheme(colorPrincipal, colorTexto){
-  document.documentElement.style.setProperty('--color-principal', colorPrincipal);
-  document.documentElement.style.setProperty('--color-texto', colorTexto);
-}
+    function setTheme(colorPrincipal, colorTexto){
+      document.documentElement.style.setProperty('--color-principal', colorPrincipal);
+      document.documentElement.style.setProperty('--color-texto', colorTexto);
+    }
 
-// =====================
-//  CARGA PROGRESIVA CSV
-// =====================
-function cargarCSV(url, onDone){
-  mostrarLoading(true);
-  // Reiniciar estructuras visuales y de datos
-  data = []; dataLower = []; headers = []; lastIndexList = [];
-  filtrosContainer.innerHTML = ''; tablaDiv.innerHTML = '';
+    // =====================
+    // CARGA PROGRESIVA CSV
+    // =====================
+    function cargarCSV(url, onDone){
+      mostrarLoading(true);
+      data = [];
+      dataLower = [];
+      headers = [];
+      lastIndexList = [];
+      filtrosContainer.innerHTML = '';
+      tablaDiv.innerHTML = '';
 
-  let rowsProcessed = 0;
-  let filtrosCreados = false;
-  const FIRST_RENDER_AT = 300; // primera pintura rápida
-  const BATCH_RENDER_EVERY = 300; // ir agregando por lotes
+      let rowsProcessed = 0;
+      let filtrosCreados = false;
+      const FIRST_RENDER_AT = 300;
+      const BATCH_RENDER_EVERY = 300;
 
-  Papa.parse(url, {
-    download: true,
-    header: true,
-    skipEmptyLines: true,
-    worker: true,          // evita bloquear la UI
-    fastMode: false,       // ❗ respeta comas entre comillas
-    delimiter: ",",
-    quoteChar: '"',
-    escapeChar: '\\',
-    step: function(results){
-      const rowObj = results.data;
-      if (!rowObj || Object.keys(rowObj).length === 0) return;
+      Papa.parse(url, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        worker: true,
+        fastMode: false,
+        delimiter: ",",
+        quoteChar: '"',
+        escapeChar: '\\',
+        step: function(results){
+          const rowObj = results.data;
+          if (!rowObj || Object.keys(rowObj).length === 0) return;
+          if (headers.length === 0) headers = Object.keys(rowObj);
+          
+          const row = headers.map(h => rowObj[h] ?? '');
+          data.push(row);
+          dataLower.push(row.map(c => String(c).toLowerCase()));
+          rowsProcessed++;
 
-      if (headers.length === 0) headers = Object.keys(rowObj);
-      const row = headers.map(h => rowObj[h] ?? '');
-      data.push(row);
-      dataLower.push(row.map(c => String(c).toLowerCase()));
-      rowsProcessed++;
+          if (!filtrosCreados && rowsProcessed >= Math.min(FIRST_RENDER_AT, 300)){
+            crearFiltros();
+            mostrarDatosPorIndice(data.map((_, i) => i));
+            filtrosCreados = true;
+          }
 
-      if (!filtrosCreados && rowsProcessed >= Math.min(FIRST_RENDER_AT, 300)){
-        crearFiltros();
+          if (filtrosCreados && rowsProcessed % BATCH_RENDER_EVERY === 0){
+            (window.requestIdleCallback || window.requestAnimationFrame)(actualizarRenderIncremental);
+          }
+        },
+        complete: function(){
+          if (!filtrosCreados){
+            crearFiltros();
+            mostrarDatosPorIndice(data.map((_, i) => i));
+          } else {
+            actualizarRenderIncremental();
+          }
+          mostrarLoading(false);
+          if (typeof onDone === 'function') onDone();
+        },
+        error: function(){
+          mostrarLoading(false);
+          if (typeof onDone === 'function') onDone();
+          alert('Error al cargar el CSV');
+        }
+      });
+    }
+
+    function actualizarRenderIncremental(){
+      const inputs = Array.from(filtrosContainer.querySelectorAll('input'));
+      const hayTexto = inputs.some(i => i.value.trim() !== '');
+      if (hayTexto) filtrar();
+      else mostrarDatosPorIndice(data.map((_, i) => i));
+    }
+
+    // =====================
+    // FILTROS (solo UI)
+    // =====================
+    function crearFiltros(){
+      filtrosContainer.innerHTML = '';
+      const normalizar = (s) => (s||'')
+        .toString()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+        .toLowerCase()
+        .replace(/\s*\/\s*/g,' / ')
+        .replace(/\s+/g,' ')
+        .trim();
+
+      const ocultarSet = new Set([
+        'acopio', 'agencia', 'origen / zona', 
+        'produccion estimada ob', 'produccion estimada de ob'
+      ]);
+
+      headers.forEach((h,i)=>{
+        const hNorm = normalizar(h);
+        if (hNorm.includes('sello') || ocultarSet.has(hNorm)) return;
+        
+        const cont = document.createElement('div');
+        cont.className='filtro';
+        cont.innerHTML=`<label>${h}</label><input type="text" data-col="${i}">`;
+        filtrosContainer.appendChild(cont);
+      });
+
+      filtrosContainer.querySelectorAll('input').forEach(input=>{
+        input.addEventListener('input', filtrarDebounce);
+      });
+    }
+
+    function filtrarDebounce(){
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(()=>{
+        requestAnimationFrame(filtrar);
+      }, 300);
+    }
+
+    function filtrar(){
+      const filtrosActivos = Array.from(filtrosContainer.querySelectorAll('input'))
+        .map(i => ({ 
+          col: +i.dataset.col, 
+          tokens: i.value.trim().toLowerCase().split(/\s+/).filter(Boolean) 
+        }))
+        .filter(f => f.tokens.length);
+
+      if (filtrosActivos.length === 0){
         mostrarDatosPorIndice(data.map((_, i) => i));
-        filtrosCreados = true;
+        return;
       }
-      if (filtrosCreados && rowsProcessed % BATCH_RENDER_EVERY === 0){
-        (window.requestIdleCallback || window.requestAnimationFrame)(actualizarRenderIncremental);
+
+      const filtradoIdx = [];
+      for (let r = 0; r < dataLower.length; r++){
+        const fila = dataLower[r];
+        let ok = true;
+        for (let k = 0; k < filtrosActivos.length && ok; k++){
+          const { col, tokens } = filtrosActivos[k];
+          const celda = fila[col] || '';
+          for (let t = 0; t < tokens.length; t++) 
+            if (!celda.includes(tokens[t])) { 
+              ok = false; 
+              break; 
+            }
+        }
+        if (ok) filtradoIdx.push(r);
       }
-    },
-    complete: function(){
-      if (!filtrosCreados){
-        crearFiltros();
-        mostrarDatosPorIndice(data.map((_, i) => i));
+      mostrarDatosPorIndice(filtradoIdx);
+    }
+
+    // =====================
+    // RENDER: tabla + tarjetas CON ESTILOS ESPECIALES
+    // =====================
+    function mostrarDatosPorIndice(indices){
+      lastIndexList = indices;
+      renderChunk(0);
+    }
+
+    function aplicarEstiloStatus(celda, valor) {
+      if (!valor) return celda;
+      
+      const valorLower = String(valor).toLowerCase().trim();
+      
+      if (valorLower === 'compliant') {
+        return `<span class="status-compliant">${valor}</span>`;
+      } else if (valorLower === 'attribute unknown') {
+        return `<span class="status-unknown">${valor}</span>`;
+      }
+      
+      return celda;
+    }
+
+    function renderChunk(start){
+      tablaDiv.innerHTML = '';
+      const end = Math.min(start + CHUNK, lastIndexList.length);
+      const frag = document.createDocumentFragment();
+
+      // TABLA
+      const table = document.createElement('table');
+      const thead = document.createElement('thead');
+      thead.innerHTML = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+      table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      for (let i = start; i < end; i++){
+        const row = data[lastIndexList[i]];
+        const tr = document.createElement('tr');
+        
+        tr.innerHTML = row.map((c, j) => {
+          // Buscar si esta columna es "Aplica" o similar
+          const headerLower = String(headers[j]).toLowerCase();
+          let celda = c;
+          
+          if (headerLower.includes('aplica') || headerLower.includes('status') || 
+              headerLower.includes('estado') || headerLower.includes('compliant')) {
+            celda = aplicarEstiloStatus(c, c);
+          }
+          
+          return `<td>${celda}</td>`;
+        }).join('');
+        
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+      frag.appendChild(table);
+
+      // TARJETAS (móvil)
+      for (let i = start; i < end; i++){
+        const row = data[lastIndexList[i]];
+        const card = document.createElement('div');
+        card.className = 'tarjeta';
+        
+        card.innerHTML = row.map((c, j) => {
+          const headerLower = String(headers[j]).toLowerCase();
+          let valor = c;
+          
+          if (headerLower.includes('aplica') || headerLower.includes('status') || 
+              headerLower.includes('estado') || headerLower.includes('compliant')) {
+            valor = aplicarEstiloStatus(c, c);
+          }
+          
+          return `<div class="fila"><div class="titulo">${headers[j]}</div><div class="valor">${valor}</div></div>`;
+        }).join('');
+        
+        frag.appendChild(card);
+      }
+
+      // Botón "Cargar más"
+      if (end < lastIndexList.length){
+        const btn = document.createElement('button');
+        btn.textContent = `Cargar más (${lastIndexList.length - end} restantes)`;
+        btn.style.margin = '1rem';
+        btn.onclick = () => {
+          appendChunk(end);
+          btn.remove();
+        };
+        frag.appendChild(btn);
+      }
+
+      tablaDiv.appendChild(frag);
+    }
+
+    function appendChunk(start){
+      const end = Math.min(start + CHUNK, lastIndexList.length);
+      
+      // Añadir filas a la tabla existente
+      const table = tablaDiv.querySelector('table');
+      const tbody = table.querySelector('tbody');
+      const fragRows = document.createDocumentFragment();
+      
+      for (let i = start; i < end; i++){
+        const row = data[lastIndexList[i]];
+        const tr = document.createElement('tr');
+        
+        tr.innerHTML = row.map((c, j) => {
+          const headerLower = String(headers[j]).toLowerCase();
+          let celda = c;
+          
+          if (headerLower.includes('aplica') || headerLower.includes('status') || 
+              headerLower.includes('estado') || headerLower.includes('compliant')) {
+            celda = aplicarEstiloStatus(c, c);
+          }
+          
+          return `<td>${celda}</td>`;
+        }).join('');
+        
+        fragRows.appendChild(tr);
+      }
+      tbody.appendChild(fragRows);
+
+      // Añadir tarjetas
+      const fragCards = document.createDocumentFragment();
+      for (let i = start; i < end; i++){
+        const row = data[lastIndexList[i]];
+        const card = document.createElement('div');
+        card.className = 'tarjeta';
+        
+        card.innerHTML = row.map((c, j) => {
+          const headerLower = String(headers[j]).toLowerCase();
+          let valor = c;
+          
+          if (headerLower.includes('aplica') || headerLower.includes('status') || 
+              headerLower.includes('estado') || headerLower.includes('compliant')) {
+            valor = aplicarEstiloStatus(c, c);
+          }
+          
+          return `<div class="fila"><div class="titulo">${headers[j]}</div><div class="valor">${valor}</div></div>`;
+        }).join('');
+        
+        fragCards.appendChild(card);
+      }
+      tablaDiv.appendChild(fragCards);
+
+      if (end < lastIndexList.length){
+        const btn = document.createElement('button');
+        btn.textContent = `Cargar más (${lastIndexList.length - end} restantes)`;
+        btn.style.margin = '1rem';
+        btn.onclick = () => {
+          appendChunk(end);
+          btn.remove();
+        };
+        tablaDiv.appendChild(btn);
+      }
+    }
+
+    // Toggle tema + carga
+    toggleBtnHeader.addEventListener('click',()=>{
+      toggleBtnHeader.disabled = true;
+      mostrarLoading(true);
+      usandoHoja2 = !usandoHoja2;
+      
+      if(usandoHoja2){
+        headerTitulo.textContent = 'Lista de clientes Tolling';
+        toggleBtnHeader.innerHTML = '<span id="flecha">⬅️</span> Volver a productores';
+        setTheme('#f78c2a','black');
+        cargarCSV(hoja2Url, () => {
+          toggleBtnHeader.disabled = false;
+        });
       } else {
-        actualizarRenderIncremental();
+        headerTitulo.textContent = 'Listado de Productores de Café';
+        toggleBtnHeader.innerHTML = '<span id="flecha">➡️</span> Ver lista Tolling';
+        setTheme('#860062','white');
+        cargarCSV(hoja1Url, () => {
+          toggleBtnHeader.disabled = false;
+        });
       }
-      mostrarLoading(false);
-      if (typeof onDone === 'function') onDone();
-    },
-    error: function(){
-      mostrarLoading(false);
-      if (typeof onDone === 'function') onDone();
-      alert('Error al cargar el CSV');
-    }
-  });
-}
+    });
 
-function actualizarRenderIncremental(){
-  const inputs = Array.from(filtrosContainer.querySelectorAll('input'));
-  const hayTexto = inputs.some(i => i.value.trim() !== '');
-  if (hayTexto) filtrar(); else mostrarDatosPorIndice(data.map((_, i) => i));
-}
-
-// =====================
-//  FILTROS (solo UI)
-// =====================
-function crearFiltros(){
-  filtrosContainer.innerHTML = '';
-  const normalizar = (s) => (s||'')
-    .toString()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // quita tildes
-    .toLowerCase()
-    .replace(/\s*\/\s*/g,' / ')
-    .replace(/\s+/g,' ')
-    .trim();
-
-  // Campos que NO deben aparecer como filtro (pero sí en la tabla)
-  const ocultarSet = new Set([
-    'acopio',
-    'agencia',
-    'origen / zona',
-    'produccion estimada ob',
-    'produccion estimada de ob'
-  ]);
-
-  headers.forEach((h,i)=>{
-    const hNorm = normalizar(h);
-    if (hNorm.includes('sello') || ocultarSet.has(hNorm)) return; // solo ocultar filtro
-
-    const cont = document.createElement('div');
-    cont.className='filtro';
-    cont.innerHTML=`<label>${h}</label><input type="text" data-col="${i}">`;
-    filtrosContainer.appendChild(cont);
-  });
-
-  filtrosContainer.querySelectorAll('input').forEach(input=>{
-    input.addEventListener('input', filtrarDebounce);
-  });
-}
-
-function filtrarDebounce(){
-  clearTimeout(debounceTimeout);
-  debounceTimeout = setTimeout(()=>{ requestAnimationFrame(filtrar); }, 300);
-}
-
-function filtrar(){
-  const filtrosActivos = Array.from(filtrosContainer.querySelectorAll('input'))
-    .map(i => ({ col: +i.dataset.col, tokens: i.value.trim().toLowerCase().split(/\s+/).filter(Boolean) }))
-    .filter(f => f.tokens.length);
-
-  if (filtrosActivos.length === 0){ mostrarDatosPorIndice(data.map((_, i) => i)); return; }
-
-  const filtradoIdx = [];
-  for (let r = 0; r < dataLower.length; r++){
-    const fila = dataLower[r];
-    let ok = true;
-    for (let k = 0; k < filtrosActivos.length && ok; k++){
-      const { col, tokens } = filtrosActivos[k];
-      const celda = fila[col] || '';
-      for (let t = 0; t < tokens.length; t++) if (!celda.includes(tokens[t])) { ok = false; break; }
-    }
-    if (ok) filtradoIdx.push(r);
-  }
-  mostrarDatosPorIndice(filtradoIdx);
-}
-
-// =====================
-//  RENDER: tabla + tarjetas
-// =====================
-function mostrarDatosPorIndice(indices){
-  lastIndexList = indices;
-  renderChunk(0);
-}
-
-function renderChunk(start){
-  tablaDiv.innerHTML = '';
-  const end = Math.min(start + CHUNK, lastIndexList.length);
-  const frag = document.createDocumentFragment();
-
-  // TABLA
-  const table=document.createElement('table');
-  const thead=document.createElement('thead');
-  thead.innerHTML='<tr>'+headers.map(h=>`<th>${h}</th>`).join('')+'</tr>';
-  table.appendChild(thead);
-  const tbody=document.createElement('tbody');
-
-  for (let i = start; i < end; i++){
-    const row = data[lastIndexList[i]];
-    const tr=document.createElement('tr');
-    tr.innerHTML=row.map(c=>`<td>${c}</td>`).join('');
-    tbody.appendChild(tr);
-  }
-  table.appendChild(tbody);
-  frag.appendChild(table);
-
-  // TARJETAS (móvil)
-  for (let i = start; i < end; i++){
-    const row = data[lastIndexList[i]];
-    const card=document.createElement('div');
-    card.className='tarjeta';
-    card.innerHTML=row.map((c,j)=>`<div class="fila"><div class="titulo">${headers[j]}</div><div class="valor">${c}</div></div>`).join('');
-    frag.appendChild(card);
-  }
-
-  // Botón "Cargar más"
-  if (end < lastIndexList.length){
-    const btn = document.createElement('button');
-    btn.textContent = `Cargar más (${lastIndexList.length - end} restantes)`;
-    btn.style.margin = '1rem';
-    btn.onclick = () => { appendChunk(end); btn.remove(); };
-    frag.appendChild(btn);
-  }
-
-  tablaDiv.appendChild(frag);
-}
-
-function appendChunk(start){
-  const end = Math.min(start + CHUNK, lastIndexList.length);
-
-  // Añadir filas a la tabla existente
-  const table = tablaDiv.querySelector('table');
-  const tbody = table.querySelector('tbody');
-  const fragRows = document.createDocumentFragment();
-  for (let i = start; i < end; i++){
-    const tr = document.createElement('tr');
-    tr.innerHTML = data[lastIndexList[i]].map(c => `<td>${c}</td>`).join('');
-    fragRows.appendChild(tr);
-  }
-  tbody.appendChild(fragRows);
-
-  // Añadir tarjetas
-  const fragCards = document.createDocumentFragment();
-  for (let i = start; i < end; i++){
-    const card = document.createElement('div');
-    card.className = 'tarjeta';
-    card.innerHTML = data[lastIndexList[i]].map((c, j) =>
-      `<div class="fila"><div class="titulo">${headers[j]}</div><div class="valor">${c}</div></div>`
-    ).join('');
-    fragCards.appendChild(card);
-  }
-  tablaDiv.appendChild(fragCards);
-
-  if (end < lastIndexList.length){
-    const btn = document.createElement('button');
-    btn.textContent = `Cargar más (${lastIndexList.length - end} restantes)`;
-    btn.style.margin = '1rem';
-    btn.onclick = () => { appendChunk(end); btn.remove(); };
-    tablaDiv.appendChild(btn);
-  }
-}
-
-// Toggle tema + carga con auto-espera (sin bloqueos artificiales)
-toggleBtnHeader.addEventListener('click',()=>{
-  toggleBtnHeader.disabled = true;
-  mostrarLoading(true);
-  usandoHoja2 = !usandoHoja2;
-  if(usandoHoja2){
-    headerTitulo.textContent='Lista de clientes Tolling';
-    toggleBtnHeader.innerHTML='<span id="flecha">⬅️</span> Volver a productores';
-    setTheme('#f78c2a','black'); // naranja + todas las letras negras
-    cargarCSV(hoja2Url, () => { toggleBtnHeader.disabled = false; });
-  } else {
-    headerTitulo.textContent='Listado de Productores de Café';
-    toggleBtnHeader.innerHTML='<span id="flecha">➡️</span> Ver lista Tolling';
-    setTheme('#860062','white'); // morado + texto blanco en header
-    cargarCSV(hoja1Url, () => { toggleBtnHeader.disabled = false; });
-  }
-});
-
-// Carga inicial
-cargarCSV(hoja1Url);
-</script>
+    // Carga inicial
+    cargarCSV(hoja1Url);
+  </script>
 </body>
 </html>
